@@ -9,8 +9,8 @@ using namespace std;
 const int WEIGHT = 1000;
 const int POSSIBLE_ITEMS = 100;
 const int MAX_WEIGHT = 100;
-const int POP_SIZE = 16;
-const int MAX_GENERATIONS = 1000;
+const int POP_SIZE = 24;
+const int MAX_GENERATIONS = 100;
 const int ELITISM = 2;
 const int PROB_MUTATION = 2;
 
@@ -53,13 +53,11 @@ void fitness(vector<Genome> &genePool, vector<item*> itemList) {
 }
 
 void spliceGenes(Genome &gene1, Genome &gene2) {
-	//at a point we can do something with the probability of things
 	//single point crossover function
 	int splicePoint = rand() % POSSIBLE_ITEMS;
 	string seq1 = gene1.getGene();
 	string seq2 = gene2.getGene();
 
-	//I named them halves but they're not really halves
 	string seq1BackHalf = seq1.substr(splicePoint, seq1.length() - splicePoint);
 	string seq1FrontHalf = seq1.substr(0, splicePoint);
 	string seq2BackHalf = seq2.substr(splicePoint, seq2.length() - splicePoint);
@@ -100,8 +98,7 @@ int main() {
 		itemList.push_back(tempItem);
 	}
 	
-	//create gene sequences
-	//lets make a lot - then choose the best
+	//create initial gene sequences
 	for (int i = 0; i <= POP_SIZE; i++) {
 		string sequence = createRandomGenome();
 		Genome newGene = Genome(sequence);
@@ -110,14 +107,12 @@ int main() {
 
 	//from here is where we will loop until we have the best generation
 	for (int p = 0; p <= MAX_GENERATIONS; p++) {
-		//fitness function - nned to put into a function at some point
-		fitness(genePool, itemList);
-		//sorts the gene pool
-		sort(genePool.begin(), genePool.end(), compareWeights);
-	
+		fitness(genePool, itemList); //determines fitness of gene pool
+		sort(genePool.begin(), genePool.end(), compareWeights); //sorts the gene pool
+
 		vector<Genome> newGen; //new generation
 
-		//populate new Generation with top 2 - these are the elite random solutions
+		//populate new Generation with top 2 - these are the elite solutions
 		for (auto i = genePool.begin(); i != genePool.begin() + ELITISM; ++i) {
 			newGen.push_back(*i);
 		}
@@ -146,7 +141,8 @@ int main() {
 
 		//re-sort
 		sort(genePool.begin(), genePool.end(), compareWeights);
-	
+		
+		//populate new Generation for only pop size
 		for (auto i = genePool.begin()+ELITISM; i != genePool.begin() + POP_SIZE; ++i) {
 			newGen.push_back(*i);
 		}
@@ -155,6 +151,7 @@ int main() {
 		for (auto i = newGen.begin(); i != newGen.end(); ++i) {
 			mutate(*i);
 		}
+
 		//fitness after mutation
 		fitness(newGen, itemList);
 	
@@ -164,7 +161,8 @@ int main() {
 	}
 
 	sort(genePool.begin(), genePool.end(), compareWeights);
-	for (auto i = genePool.begin() + ELITISM; i != genePool.begin() + POP_SIZE; ++i) {
+	cout << "Final Generation" << endl;
+	for (auto i = genePool.begin(); i != genePool.begin() + POP_SIZE; ++i) {
 		cout << i->getWeight() << endl;
 	}
 	
